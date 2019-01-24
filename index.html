@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>read vuejs</title>
+  </head>
+  <body>
+    <div id="app">
+      <input type="text" v-model="value" />
+      <p>{{ value }}</p>
+      <p v-html="htmlData"></p>
+      <p v-text="textData"></p>
+    </div>
+  </body>
+  <script src="./js/core/index.js"></script>
+  <script>
+    var vm = new Vue({
+      el: "#app",
+      data: {
+        value: "test",
+        htmlData: "<h2>this html el</h2>",
+        textData: "<h2>this text el</h2>"
+      }
+    });
+  </script>
+</html>
