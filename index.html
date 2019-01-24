@@ -10,6 +10,10 @@
       <p>{{ value }}</p>
       <p v-html="htmlData"></p>
       <p v-text="textData"></p>
+      <div>
+        <h2>{{ title }}</h2>
+        <p>{{ content }}</p>
+      </div>
     </div>
   </body>
   <script src="./js/core/index.js"></script>
@@ -17,6 +21,8 @@
     var vm = new Vue({
       el: "#app",
       data: {
+        title: '标题',
+        content: '内容',
         value: "test",
         htmlData: "<h2>this html el</h2>",
         textData: "<h2>this text el</h2>"

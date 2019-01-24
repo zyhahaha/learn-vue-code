@@ -6,22 +6,28 @@ function Vue(option) {
   // 数据代理
   Object.keys(data).forEach(key => {
     proxyData.call(this, key);
-  })
+  });
+
+  // 监听属性
+  observer(data, this);
+
+  // 渲染页面
+  compile.call(this, el);
 }
 
 /////////////////////////////////// proxyData --  数据代理 ///////////////////////////////////////////
 function proxyData(key, getter){
   let self = this;
   Object.defineProperty(self, key, {
-    configurable: true,
+    configurable: false,
     enumerable: true,
     get: function proxyGetter(){
-      self._data[key];
+      return self._data[key];
     },
     set: function proxySetter(newVal){
       self._data[key] = newVal;
     }
-  })
+  });
 }
 
 /////////////////////////////////// observer --  监听属性 观察者模式 //////////////////////////////////
@@ -43,7 +49,7 @@ function compile(el){
     $fragment.appendChild(child);
   }
 
-  compileElement($fragment);
+  compileElement.call(this, $fragment);
 
   // append el
   $el.appendChild($fragment);
@@ -57,14 +63,28 @@ function compileElement(el){
     let text = node.textContent;
     let reg = /\{\{(.*)\}\}/;
     if (isTextNode(node) && reg.test(text)) {
-      // let exp = RegExp.$1.trim();
-      node.textContent = "1234";
+      let exp = RegExp.$1.trim();
+      let value = _getVMVal(this, exp); // 获取属性值
+      // console.log(value);
+      node.textContent = value;
     }
 
     if (node.childNodes && node.childNodes.length) {
-      this.compileElement(node);
+      compileElement.call(this, node);
     }
   });
+}
+
+// get vm value
+function _getVMVal(vm, exp) {
+  // console.log(vm.content);
+  let val = vm;
+  exp = exp.split('.');
+  exp.forEach(k => {
+    // console.log(val[k])
+    k ? val = val[k] : null;
+  });
+  return val;
 }
 
 // 判断node类型
