@@ -77,12 +77,10 @@ function compileElement(el){
 
 // get vm value
 function _getVMVal(vm, exp) {
-  // console.log(vm.content);
   let val = vm;
   exp = exp.split('.');
   exp.forEach(k => {
-    // console.log(val[k])
-    k ? val = val[k] : null;
+    val = val[k];
   });
   return val;
 }
