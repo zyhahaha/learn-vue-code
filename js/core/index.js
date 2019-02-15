@@ -9,7 +9,7 @@ function Vue(option) {
   });
 
   // 监听属性
-  observer(data, this);
+  observe(data, this);
 
   // 渲染页面
   compile.call(this, el);
@@ -29,9 +29,6 @@ function proxyData(key, getter) {
     }
   });
 }
-
-/////////////////////////////////// observer --  监听属性 观察者模式 //////////////////////////////////
-function observer() {}
 
 /////////////////////////////////// compile -- 渲染页面 //////////////////////////////////////////////
 
@@ -74,13 +71,16 @@ function compileElement(el) {
 
 // 编译文本
 function compileText(node) {
+  // this.bind(node, vm, exp, 'text');
+
   let text = node.textContent;
   let reg = /\{\{(.*)\}\}/;
   if (reg.test(text)) {
     let exp = RegExp.$1.trim();
-    let value = _getVMVal(this, exp); // 获取属性值
+    compileUtil.bind(node, this, exp, 'text');
+    // let value = _getVMVal(this, exp); // 获取属性值
     // console.log(value);
-    node.textContent = value;
+    // node.textContent = value;
   }
 }
 
@@ -108,7 +108,19 @@ function compileElementNode(node) {
 
 // 指令集合
 let compileUtil = {
+  bind: function(node, vm, exp, dir) {
+    var updaterFn = updater[dir + "Updater"];
+
+    updaterFn && updaterFn(node, _getVMVal(vm, exp));
+
+    new Watcher(vm, exp, function(value, oldValue) {
+      // console.log(dir)
+      updaterFn && updaterFn(node, value, oldValue);
+    });
+  },
   model: function(node, vm, exp) {
+    this.bind(node, vm, exp, "model");
+    // alert(node)
     let self = this;
     let val = _getVMVal(vm, exp);
     node.addEventListener("input", e => {
@@ -116,7 +128,9 @@ let compileUtil = {
       if (val === newVal) {
         return;
       }
-      self._setVMVal(vm, exp, newValue);
+      // alert(newVal)
+      // debugger
+      _setVMVal(vm, exp, newVal);
       val = newVal;
     });
   },
@@ -139,7 +153,12 @@ function _setVMVal(vm, exp, value) {
   var val = vm;
   exp = exp.split(".");
   exp.forEach(function(k, i) {
-    
+    // 非最后一个key，更新val的值
+    if (i < exp.length - 1) {
+      val = val[k];
+    } else {
+      val[k] = value;
+    }
   });
 }
 
@@ -156,3 +175,14 @@ function isDirective(attr) {
 function isEventDirective(dir) {
   return dir.indexOf("on") === 0;
 }
+
+var updater = {
+  textUpdater: function(node, value) {
+    node.textContent = typeof value == "undefined" ? "" : value;
+  },
+
+  modelUpdater: function(node, value, oldValue) {
+    // console.log(value)
+    node.value = typeof value == "undefined" ? "" : value;
+  }
+};
